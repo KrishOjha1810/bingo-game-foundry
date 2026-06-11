@@ -5,8 +5,7 @@ import "forge-std/Test.sol";
 import "../src/BingoBoard.sol";
 import "../src/BingoGame.sol";
 import "../src/BingoToken.sol";
-import "forge-std/console.sol"; 
-
+import "forge-std/console.sol";
 
 contract BingoGameTest is Test {
     BingoToken public token;
@@ -41,11 +40,11 @@ contract BingoGameTest is Test {
     function testCreateGame() public {
         vm.startPrank(owner);
 
-        vm.expectEmit(true, false, false, true);  
+        vm.expectEmit(true, false, false, true);
         emit BingoGame.GameCreated(1, block.timestamp);
         game.createGame();
 
-        (uint256 gameID,,, uint256 pot, , bool isActive) = game.games(1);
+        (uint256 gameID,,, uint256 pot,, bool isActive) = game.games(1);
 
         assertEq(gameID, 1);
         assertEq(isActive, true);
@@ -54,7 +53,7 @@ contract BingoGameTest is Test {
         vm.stopPrank();
     }
 
-    function testJoinGame() public{
+    function testJoinGame() public {
         vm.prank(owner);
         game.createGame();
 
@@ -65,12 +64,12 @@ contract BingoGameTest is Test {
 
         address[] memory players = game.getPlayers(1);
 
-        (, , , uint256 pot, , ) = game.games(1);
+        (,,, uint256 pot,,) = game.games(1);
         assertEq(players.length, 1);
         assertEq(pot, game.entryFee());
     }
 
-    function testDrawNumber() public{
+    function testDrawNumber() public {
         vm.prank(owner);
         game.createGame();
 
@@ -82,12 +81,12 @@ contract BingoGameTest is Test {
         vm.expectEmit(true, false, false, true);
         vm.prank(owner);
         game.drawNumber(1);
-        
-        (, , uint256 lastDraw, , , ) = game.games(1);
+
+        (,, uint256 lastDraw,,,) = game.games(1);
         assert(lastDraw > 0); // Ensure lastDraw timestamp is updated
     }
 
-    function testDeclareWinner() public{
+    function testDeclareWinner() public {
         vm.prank(owner);
         game.createGame();
 
@@ -105,15 +104,15 @@ contract BingoGameTest is Test {
         vm.mockCall(
             address(board), //address of the contract we want to mock
             abi.encodeWithSelector(board.check.selector, 1, player1),
-            abi.encode(true)//mocked return value
+            abi.encode(true) //mocked return value
         );
 
         vm.prank(owner);
         game.declareWinner(1);
 
-        (, , , uint256 pot,address winner, bool isActive) = game.games(1);
+        (,,, uint256 pot, address winner, bool isActive) = game.games(1);
         address[] memory players = game.getPlayers(1);
-        
+
         assertEq(winner, player1);
         assertEq(pot, 0);
         assertEq(false, isActive);
@@ -135,7 +134,7 @@ contract BingoGameTest is Test {
         vm.mockCall(
             address(board), //address of the contract we want to mock
             abi.encodeWithSelector(board.check.selector, 1, player1),
-            abi.encode(true)//mocked return value
+            abi.encode(true) //mocked return value
         );
 
         vm.prank(owner);
@@ -144,7 +143,7 @@ contract BingoGameTest is Test {
         vm.prank(owner);
         game.resetGame(1);
 
-        (, , uint256 lastDraw, uint256 pot,address winner, bool isActive) = game.games(1);
+        (,, uint256 lastDraw, uint256 pot, address winner, bool isActive) = game.games(1);
         address[] memory players = game.getPlayers(1);
 
         assertEq(players.length, 0);
@@ -152,5 +151,21 @@ contract BingoGameTest is Test {
         assertEq(pot, 0);
         assertEq(lastDraw, 0);
         assertEq(isActive, true);
+    }
+
+    function testJoinRevertsWhenGameNotActive() public {
+        // game 1 was never created, so it is inactive
+        vm.prank(player1);
+        vm.expectRevert("Game isn't active");
+        game.joinGame(1);
+    }
+
+    function testResetRevertsWhileActive() public {
+        vm.prank(owner);
+        game.createGame();
+
+        vm.prank(owner);
+        vm.expectRevert("Game is Still Active");
+        game.resetGame(1);
     }
 }

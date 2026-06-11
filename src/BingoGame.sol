@@ -67,7 +67,7 @@ contract BingoGame is Ownable {
      */
     function createGame() external onlyOwner {
         gameCounter++;
-        
+
         Game storage game = games[gameCounter];
         game.gameId = gameCounter;
         game.startTime = block.timestamp;
@@ -93,7 +93,7 @@ contract BingoGame is Ownable {
         require(game.isActive, "Game isn't active");
         require(block.timestamp <= game.startTime + joinDuration, "Join period ended");
         require(token.balanceOf(msg.sender) >= entryFee, "Insufficient Balance");
-        
+
         token.transferFrom(msg.sender, address(this), entryFee);
         game.pot += entryFee;
         game.players.push(msg.sender);
@@ -109,9 +109,9 @@ contract BingoGame is Ownable {
         Game storage game = games[gameID];
         require(game.isActive, "Game isn't active");
         require(block.timestamp >= game.lastDraw + turnDuration, "Wait for next turn");
-        
+
         uint8 random = uint8(uint256(blockhash(block.number - 1)) % 256);
-        
+
         for (uint256 i = 0; i < game.players.length; i++) {
             board.markNumbers(gameID, game.players[i], random);
         }

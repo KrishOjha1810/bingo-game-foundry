@@ -4,9 +4,9 @@ pragma solidity ^0.8.19;
 contract BingoBoard {
     /// @notice Represents the board with numbers and marked cells
     struct Board {
-        uint8[5][5] numbers;    // Stores the numbers on the board (5x5 grid)
-        bool[5][5] marked;      // Tracks marked numbers on the board
-        bool isBoard;           // Indicates if the board is active
+        uint8[5][5] numbers; // Stores the numbers on the board (5x5 grid)
+        bool[5][5] marked; // Tracks marked numbers on the board
+        bool isBoard; // Indicates if the board is active
     }
 
     /// @notice Maps game ID and player address to their board
@@ -63,7 +63,7 @@ contract BingoBoard {
     /// @param number The number to mark
     function markNumbers(uint256 gameID, address player, uint8 number) external {
         if (drawnNumbers[gameID][number]) return; // Skip marking if already drawn
-        drawnNumbers[gameID][number] = true;       // Mark the number as drawn
+        drawnNumbers[gameID][number] = true; // Mark the number as drawn
 
         Board storage board = boards[gameID][player];
 
